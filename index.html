@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+  /* Reset & Base Styles */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { background-color: #111b21; color: #e9edef; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+  
+  /* Main Container mimics the WA Web Window */
+  .app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh; /* Sesuaikan tinggi sesuai iframe Google Sites */
+    background-color: #202c33;
+    overflow: hidden;
+  }
+
+  /* --- LEFT SIDEBAR --- */
+  .sidebar {
+    width: 30%;
+    max-width: 400px;
+    min-width: 250px;
+    background-color: #111b21;
+    border-right: 1px solid #2f3b43;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header {
+    height: 60px;
+    background-color: #202c33;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    justify-content: space-between;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #6a7175; /* Placeholder img */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'); /* Ganti URL foto Anda */
+    background-size: cover;
+  }
+
+  .search-bar {
+    background-color: #111b21;
+    padding: 8px;
+    border-bottom: 1px solid #2f3b43;
+  }
+  
+  .search-input {
+    width: 100%;
+    background-color: #202c33;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 30px;
+    color: #aebac1;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .contact-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #202c33;
+    transition: background 0.2s;
+  }
+
+  .contact-item:hover { background-color: #202c33; }
+  .contact-item.active { background-color: #2a3942; }
+
+  .contact-info { margin-left: 15px; flex: 1; }
+  .contact-name { font-size: 16px; color: #e9edef; font-weight: 500; }
+  .contact-status { font-size: 13px; color: #8696a0; margin-top: 3px; }
+  .contact-time { font-size: 12px; color: #8696a0; }
+
+  /* --- RIGHT CHAT AREA --- */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0b141a;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* WA Dark Doodle */
+    background-size: 300px;
+    opacity: 0.95; 
+    position: relative;
+  }
+
+  .chat-header {
+    height: 60px;
+    background-color: #202c33;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid #2f3b43;
+    z-index: 10;
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 20px 50px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Chat Bubbles */
+  .message {
+    max-width: 65%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14.2px;
+    line-height: 19px;
+    position: relative;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+  }
+
+  .message.received {
+    align-self: flex-start;
+    background-color: #202c33;
+    border-top-left-radius: 0;
+  }
+
+  .message.sent {
+    align-self: flex-end;
+    background-color: #005c4b;
+    border-top-right-radius: 0;
+  }
+
+  .msg-time {
+    float: right;
+    font-size: 11px;
+    color: #8696a0;
+    margin-top: 5px;
+    margin-left: 10px;
+  }
+
+  /* Footer (Input area placeholder) */
+  .chat-footer {
+    height: 62px;
+    background-color: #202c33;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #8696a0;
+  }
+  
+  .input-dummy {
+    flex: 1;
+    background-color: #2a3942;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+    font-size: 14px;
+  }
+
+  /* Icons (Using Emoji/Unicode for simplicity to avoid external font loading issues) */
+  .icon { font-size: 18px; cursor: pointer; opacity: 0.7; }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .sidebar { width: 80px; min-width: unset; }
+    .contact-info, .search-bar { display: none; }
+    .chat-body { padding: 10px; }
+    .message { max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="sidebar">
+    <div class="header">
+      <div class="user-avatar"></div>
+      <div style="display:flex; gap:15px;">
+        <span class="icon">⭕</span>
+        <span class="icon">💬</span>
+        <span class="icon">⋮</span>
+      </div>
+    </div>
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="Search or start new chat">
+    </div>
+    <div class="contact-list" id="contactList">
+      </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="chat-header">
+      <div class="user-avatar" id="currentAvatar" style="width: 40px; height: 40px; margin-right: 15px;"></div>
+      <div>
+        <div class="contact-name" id="headerName">Select a chat</div>
+        <div class="contact-status">online</div>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="message received">
+        Halo! 👋 Silakan pilih menu di sebelah kiri untuk melihat portofolio saya.
+        <span class="msg-time">Now</span>
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <span class="icon" style="margin-right:15px">😊</span>
+      <span class="icon" style="margin-right:15px">📎</span>
+      <div class="input-dummy">Type a message...</div>
+      <span class="icon" style="margin-left:15px">🎤</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- DATA PORTOFOLIO ---
+  // Ganti isi konten di sini sesuai pengalaman 20 tahun Anda
+  const portfolioData = [
+    {
+      id: 'about',
+      name: 'About Me',
+      avatar: '👤', 
+      messages: [
+        "Hi! Saya adalah Web Programmer dengan pengalaman 20 tahun.",
+        "Spesialisasi saya meliputi Full Stack Development, System Architecture, dan Database Optimization.",
+        "Saya percaya kode yang baik bukan hanya jalan, tapi juga maintainable."
+      ]
+    },
+    {
+      id: 'work',
+      name: 'Work Experience',
+      avatar: '💼',
+      messages: [
+        "Berikut perjalanan karir saya:",
+        "🔹 **Senior Developer @ Tech Corp (2015-Now)**\nMemimpin tim backend dan migrasi sistem legacy ke Microservices.",
+        "🔹 **Web Developer @ Creative Agency (2008-2015)**\nMenangani 50+ website klien korporat.",
+        "🔹 **Freelancer (2004-2008)**\nMemulai karir di era awal web modern."
+      ]
+    },
+    {
+      id: 'projects',
+      name: 'Featured Projects',
+      avatar: '🚀',
+      messages: [
+        "Ini beberapa project unggulan saya:",
+        "1. **E-Gov System**: Sistem manajemen kependudukan skala kota.",
+        "2. **E-Commerce Platform**: Custom engine dengan integrasi payment gateway lokal.",
+        "3. **ERP System**: Untuk perusahaan logistik multinasional."
+      ]
+    },
+    {
+      id: 'skills',
+      name: 'Technical Skills',
+      avatar: '⚡',
+      messages: [
+        "Tech stack yang saya kuasai:",
+        "Frontend: React, Vue, HTML5, SCSS.",
+        "Backend: Node.js, PHP (Laravel/CI), Python.",
+        "Database: MySQL, PostgreSQL, MongoDB.",
+        "DevOps: Docker, AWS, CI/CD Pipelines."
+      ]
+    },
+    {
+      id: 'contact',
+      name: 'Get In Touch',
+      avatar: '📞',
+      messages: [
+        "Tertarik bekerja sama?",
+        "Email: emailanda@example.com",
+        "LinkedIn: linkedin.com/in/profilanda",
+        "Silakan kirim pesan!"
+      ]
+    }
+  ];
+
+  const contactListEl = document.getElementById('contactList');
+  const chatBodyEl = document.getElementById('chatBody');
+  const headerNameEl = document.getElementById('headerName');
+  const currentAvatarEl = document.getElementById('currentAvatar');
+  
+  // Render Sidebar
+  portfolioData.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'contact-item';
+    div.innerHTML = `
+      <div style="font-size:24px; width:50px; text-align:center;">${item.avatar}</div>
+      <div class="contact-info">
+        <div class="contact-name">${item.name}</div>
+        <div class="contact-status">Click to read</div>
+      </div>
+      <div class="contact-time">Today</div>
+    `;
+    div.onclick = () => loadChat(index);
+    contactListEl.appendChild(div);
+  });
+
+  // Fungsi Loading Chat dengan Efek Mengetik
+  function loadChat(index) {
+    // Update Active State Sidebar
+    const items = document.querySelectorAll('.contact-item');
+    items.forEach(i => i.classList.remove('active'));
+    items[index].classList.add('active');
+
+    const data = portfolioData[index];
+    
+    // Update Header
+    headerNameEl.innerText = data.name;
+    currentAvatarEl.innerHTML = `<div style="font-size:24px; text-align:center; line-height:40px;">${data.avatar}</div>`;
+    currentAvatarEl.style.backgroundColor = '#202c33';
+
+    // Clear Chat & Start Typing Effect
+    chatBodyEl.innerHTML = '';
+    
+    let msgIndex = 0;
+
+    function typeNextMessage() {
+      if (msgIndex >= data.messages.length) return;
+
+      const text = data.messages[msgIndex];
+      const bubble = document.createElement('div');
+      bubble.className = 'message received';
+      bubble.innerHTML = formatText(text) + '<span class="msg-time">Just now</span>';
+      
+      chatBodyEl.appendChild(bubble);
+      
+      // Auto Scroll ke bawah
+      chatBodyEl.scrollTop = chatBodyEl.scrollHeight;
+
+      msgIndex++;
+      // Delay random antara 500ms - 1000ms untuk efek natural
+      setTimeout(typeNextMessage, 500 + Math.random() * 500); 
+    }
+
+    typeNextMessage();
+  }
+
+  // Simple formatter untuk Bold text (**text**) dan Newline
+  function formatText(text) {
+    let formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Bold
+    formatted = formatted.replace(/\n/g, '<br>'); // New line
+    return formatted;
+  }
+
+</script>
+
+</body>
+</html>
