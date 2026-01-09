@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  /* --- 1. RESET & BASE STYLES --- */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+  
+  /* PERBAIKAN UTAMA DISINI: Gunakan fixed positioning untuk container agar memenuhi iframe */
+  body { 
+    background-color: #0f172a; 
+    color: #e2e8f0; 
+    overflow: hidden; /* Mencegah double scrollbar */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+  }
+  
+  /* --- 2. LAYOUT CONTAINER --- */
+  .app-container {
+    display: flex;
+    width: 100%;
+    height: 100%; /* Mengikuti tinggi body */
+    background-color: #1e293b;
+    position: relative;
+  }
+
+  /* --- 3. SIDEBAR (LEFT) --- */
+  .sidebar {
+    width: 350px;
+    min-width: 300px;
+    background-color: #0f172a;
+    border-right: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+  
+  .header {
+    height: 60px; /* Sedikit diperkecil agar hemat tempat di HP */
+    background-color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #334155;
+    color: white;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  
+  .header-title { font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .contact-list { 
+    flex: 1; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS/Android */
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #1e293b;
+    transition: background 0.2s;
+  }
+
+  .contact-item:hover { background-color: #1e293b; }
+  .contact-item.active { background-color: #1e293b; border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
+
+  .contact-info { margin-left: 15px; flex: 1; }
+  .contact-name { font-size: 16px; color: #f1f5f9; font-weight: 600; }
+  .contact-desc { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+  /* SIDEBAR FOOTER */
+  .sidebar-footer {
+    background-color: #0b1120;
+    padding: 15px;
+    border-top: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0; /* Agar footer tidak tergencet */
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .login-btn:hover { background-color: #1d4ed8; }
+
+  .social-icons {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 5px 0;
+  }
+
+  .social-icon { width: 22px; height: 22px; fill: #94a3b8; transition: fill 0.2s; cursor: pointer; }
+  .social-icon:hover { fill: #3b82f6; }
+
+  .copyright { font-size: 10px; color: #475569; margin-top: 5px; }
+
+  /* --- 4. CHAT AREA (RIGHT) --- */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0f172a;
+    background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url("https://www.transparenttextures.com/patterns/cubes.png");
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .chat-header {
+    height: 60px;
+    background-color: #1e293b;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+
+  .back-btn {
+    display: none;
+    margin-right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .message.received { align-self: flex-start; background-color: #334155; color: #e2e8f0; border-bottom-left-radius: 2px; }
+  .msg-time { display: block; font-size: 10px; opacity: 0.7; margin-top: 6px; text-align: right; }
+
+  .chat-footer {
+    height: 65px;
+    background-color: #1e293b;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-top: 1px solid #334155;
+    flex-shrink: 0;
+  }
+  .input-dummy {
+    flex: 1;
+    background-color: #0f172a;
+    height: 40px;
+    border-radius: 20px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    color: #64748b;
+    font-size: 14px;
+    border: 1px solid #334155;
+  }
+
+  /* --- 5. MOBILE RESPONSIVE LOGIC --- */
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; position: absolute; height: 100%; top: 0; left: 0; transform: translateX(0); }
+    .chat-area { position: absolute; width: 100%; height: 100%; top: 0; left: 0; transform: translateX(100%); transition: transform 0.3s ease; }
+    
+    .sidebar.hidden { transform: translateX(-100%); }
+    .chat-area.active { transform: translateX(0); }
+    
+    .back-btn { display: block; }
+    .chat-body { padding: 15px; }
+    .message { max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="sidebar" id="sidebar">
+    <div class="header">
+      <div class="header-title">MY PORTFOLIO</div>
+    </div>
+    
+    <div class="contact-list" id="contactList">
+      </div>
+
+    <div class="sidebar-footer">
+      <a href="https://gogiek.com/login" target="_blank" class="login-btn">LOGIN AREA</a>
+      
+      <div class="social-icons">
+        <a href="https://wa.me/62812345678" target="_blank" title="WhatsApp">
+          <svg class="social-icon" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
+        </a>
+        <a href="tel:+62812345678" target="_blank" title="Telephone">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"/></svg>
+        </a>
+        <a href="mailto:email@example.com" target="_blank" title="Email">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/></svg>
+        </a>
+        <a href="https://instagram.com/username" target="_blank" title="Instagram">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/></svg>
+        </a>
+        <a href="https://facebook.com/username" target="_blank" title="Facebook">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>
+        </a>
+        <a href="https://x.com/username" target="_blank" title="X">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+        </a>
+        <a href="https://linkedin.com/in/username" target="_blank" title="LinkedIn">
+           <svg class="social-icon" viewBox="0 0 24 24"><path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/></svg>
+        </a>
+      </div>
+
+      <div class="copyright">Design by Gogiek 2026</div>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chatArea">
+    <div class="chat-header">
+      <button class="back-btn" onclick="toggleMobile(false)">❮</button>
+      <div id="headerTitle" style="font-size: 16px; font-weight: 600; color: white;">Welcome 👋</div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="message received">
+        Halo! Silakan pilih menu di daftar kontak.
+        <span class="msg-time">System</span>
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <div class="input-dummy">Type a message...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- KONFIGURASI LINK (EDIT DISINI) ---
+  // Silakan cari text "href" di bagian HTML di atas untuk mengubah link sosial media 
+  
+  const portfolioData = [
+    {
+      id: 'about',
+      name: 'About Me',
+      icon: '👨‍💻', 
+      desc: 'Profile Summary',
+      messages: [
+        "Hi! Saya adalah Web Programmer.",
+        "Pengalaman: 20 Tahun di industri IT.",
+        "Fokus: Membangun sistem web yang scalable."
+      ]
+    },
+    {
+      id: 'work',
+      name: 'Experience',
+      icon: '🏢',
+      desc: 'Work History',
+      messages: [
+        "**2015 - Now: Senior Tech Lead**\nTech Corp International.",
+        "**2008 - 2015: Lead Developer**\nCreative Agency Solutions.",
+        "**2004 - 2008: Fullstack Dev**\nFreelance & Contract."
+      ]
+    },
+    {
+      id: 'projects',
+      name: 'Portofolio',
+      icon: '🚀',
+      desc: 'Featured Projects',
+      messages: [
+        "1. **E-Gov System (2024)**\nSistem manajemen kota pintar.",
+        "2. **Marketplace Engine (2020)**\nHigh traffic e-commerce core.",
+        "3. **Bank Core System (2015)**\nLegacy migration project."
+      ]
+    },
+    {
+      id: 'hobby',
+      name: 'Hobby',
+      icon: '🎮',
+      desc: 'My Interests',
+      messages: [
+        "Selain coding, saya suka:",
+        "- IoT & Microcontrollers",
+        "- Retro Gaming",
+        "- Technical Writing"
+      ]
+    }
+  ];
+
+  const contactListEl = document.getElementById('contactList');
+  const chatBodyEl = document.getElementById('chatBody');
+  const headerTitleEl = document.getElementById('headerTitle');
+  const sidebarEl = document.getElementById('sidebar');
+  const chatAreaEl = document.getElementById('chatArea');
+  
+  // Render Sidebar List
+  portfolioData.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'contact-item';
+    div.innerHTML = `
+      <div style="font-size:24px;">${item.icon}</div>
+      <div class="contact-info">
+        <div class="contact-name">${item.name}</div>
+        <div class="contact-desc">${item.desc}</div>
+      </div>
+    `;
+    div.onclick = () => loadChat(index);
+    contactListEl.appendChild(div);
+  });
+
+  // Fungsi Toggle Mobile
+  function toggleMobile(showChat) {
+    if (window.innerWidth <= 768) {
+      if (showChat) {
+        sidebarEl.classList.add('hidden');
+        chatAreaEl.classList.add('active');
+      } else {
+        sidebarEl.classList.remove('hidden');
+        chatAreaEl.classList.remove('active');
+      }
+    }
+  }
+
+  function loadChat(index) {
+    const items = document.querySelectorAll('.contact-item');
+    items.forEach(i => i.classList.remove('active'));
+    items[index].classList.add('active');
+
+    const data = portfolioData[index];
+    headerTitleEl.innerText = data.name;
+
+    // Mobile Transition
+    toggleMobile(true);
+
+    chatBodyEl.innerHTML = '';
+    let msgIndex = 0;
+
+    function typeNextMessage() {
+      if (msgIndex >= data.messages.length) return;
+
+      const text = data.messages[msgIndex];
+      const bubble = document.createElement('div');
+      bubble.className = 'message received';
+      bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') + 
+                         '<span class="msg-time">Just now</span>';
+      
+      chatBodyEl.appendChild(bubble);
+      // Auto Scroll fix for mobile
+      chatBodyEl.scrollTop = chatBodyEl.scrollHeight;
+
+      msgIndex++;
+      setTimeout(typeNextMessage, 600); 
+    }
+
+    typeNextMessage();
+  }
+</script>
+
+</body>
+</html>
