@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+  /* Reset & Base Styles */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { background-color: #0f172a; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+  
+  /* Container Utama */
+  .app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background-color: #1e293b; /* Slate 800 */
+    overflow: hidden;
+  }
+
+  /* --- LEFT SIDEBAR --- */
+  .sidebar {
+    width: 30%;
+    max-width: 350px;
+    min-width: 250px;
+    background-color: #0f172a; /* Slate 900 */
+    border-right: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header {
+    height: 65px;
+    background-color: #1e293b;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #334155;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .header-title { font-size: 18px; letter-spacing: 0.5px; }
+
+  .contact-list { flex: 1; overflow-y: auto; }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #1e293b;
+    transition: background 0.2s;
+  }
+
+  .contact-item:hover { background-color: #1e293b; }
+  .contact-item.active { background-color: #334155; border-left: 4px solid #3b82f6; }
+
+  .contact-info { margin-left: 15px; flex: 1; }
+  .contact-name { font-size: 16px; color: #f1f5f9; font-weight: 600; }
+  .contact-desc { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+  /* --- RIGHT CHAT AREA --- */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0f172a;
+    /* Ganti background pattern jadi gradient simple agar tidak dikira WA */
+    background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url("https://www.transparenttextures.com/patterns/cubes.png");
+    position: relative;
+  }
+
+  .chat-header {
+    height: 65px;
+    background-color: #1e293b;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 20px 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* Chat Bubbles - Generic Blue Style */
+  .message {
+    max-width: 70%;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .message.received {
+    align-self: flex-start;
+    background-color: #334155; /* Slate 700 */
+    color: #e2e8f0;
+    border-bottom-left-radius: 2px;
+  }
+
+  .message.sent {
+    align-self: flex-end;
+    background-color: #2563eb; /* Blue 600 */
+    color: white;
+    border-bottom-right-radius: 2px;
+  }
+
+  .msg-time {
+    display: block;
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  /* Footer Placeholder */
+  .chat-footer {
+    height: 70px;
+    background-color: #1e293b;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-top: 1px solid #334155;
+  }
+  
+  .input-dummy {
+    flex: 1;
+    background-color: #0f172a;
+    height: 45px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    color: #64748b;
+    font-size: 14px;
+    border: 1px solid #334155;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; min-width: unset; }
+    .contact-info, .header-title { display: none; }
+    .contact-item { justify-content: center; padding: 15px 0; }
+    .chat-body { padding: 15px; }
+    .message { max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="sidebar">
+    <div class="header">
+      <div class="header-title">MY PORTFOLIO</div>
+    </div>
+    
+    <div class="contact-list" id="contactList">
+      </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="chat-header">
+      <div id="headerTitle" style="font-size: 18px; font-weight: 600; color: white;">Welcome 👋</div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="message received">
+        Halo! Silakan pilih menu di sebelah kiri untuk melihat detail pengalaman kerja dan skill saya.
+        <span class="msg-time">System</span>
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <div class="input-dummy">Type a message...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- DATA ---
+  const portfolioData = [
+    {
+      id: 'about',
+      name: 'About Me',
+      icon: '👨‍💻', 
+      desc: 'Profile Summary',
+      messages: [
+        "Hi! Saya adalah Senior Web Programmer.",
+        "Pengalaman: 20 Tahun di industri IT.",
+        "Fokus: Membangun sistem web yang scalable dan robust."
+      ]
+    },
+    {
+      id: 'work',
+      name: 'Experience',
+      icon: '🏢',
+      desc: 'Work History',
+      messages: [
+        "**2015 - Sekarang: Senior Tech Lead**\nTech Corp International.",
+        "**2008 - 2015: Lead Developer**\nCreative Agency Solutions.",
+        "**2004 - 2008: Fullstack Dev**\nFreelance & Contract."
+      ]
+    },
+    {
+      id: 'stack',
+      name: 'Tech Stack',
+      icon: '🛠️',
+      desc: 'Skills & Tools',
+      messages: [
+        "Backend: Node.js, Python, Go, PHP.",
+        "Frontend: React.js, Vue, Tailwind.",
+        "DevOps: Docker, K8s, AWS, Linux.",
+        "Database: PostgreSQL, Mongo, Redis."
+      ]
+    },
+    {
+      id: 'contact',
+      name: 'Contact',
+      icon: '📬',
+      desc: 'Get in touch',
+      messages: [
+        "Email: user@example.com",
+        "LinkedIn: /in/userprofile",
+        "GitHub: @userdev"
+      ]
+    }
+  ];
+
+  const contactListEl = document.getElementById('contactList');
+  const chatBodyEl = document.getElementById('chatBody');
+  const headerTitleEl = document.getElementById('headerTitle');
+  
+  // Render Sidebar
+  portfolioData.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'contact-item';
+    div.innerHTML = `
+      <div style="font-size:24px;">${item.icon}</div>
+      <div class="contact-info">
+        <div class="contact-name">${item.name}</div>
+        <div class="contact-desc">${item.desc}</div>
+      </div>
+    `;
+    div.onclick = () => loadChat(index);
+    contactListEl.appendChild(div);
+  });
+
+  function loadChat(index) {
+    const items = document.querySelectorAll('.contact-item');
+    items.forEach(i => i.classList.remove('active'));
+    items[index].classList.add('active');
+
+    const data = portfolioData[index];
+    headerTitleEl.innerText = data.name;
+
+    chatBodyEl.innerHTML = '';
+    let msgIndex = 0;
+
+    function typeNextMessage() {
+      if (msgIndex >= data.messages.length) return;
+
+      const text = data.messages[msgIndex];
+      const bubble = document.createElement('div');
+      bubble.className = 'message received';
+      // Format simple bold dan newline
+      bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') + 
+                         '<span class="msg-time">Just now</span>';
+      
+      chatBodyEl.appendChild(bubble);
+      chatBodyEl.scrollTop = chatBodyEl.scrollHeight;
+
+      msgIndex++;
+      setTimeout(typeNextMessage, 600); 
+    }
+
+    typeNextMessage();
+  }
+</script>
+
+</body>
+</html>
