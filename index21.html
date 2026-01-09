@@ -47,13 +47,13 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Header Sidebar - MODIFIED: Centered */
+  /* Header Sidebar - CENTERED */
   .sidebar-header {
     height: 70px;
     padding: 0 20px;
     display: flex;
     align-items: center;
-    justify-content: center; /* Ubah ke Center sesuai request */
+    justify-content: center; /* Rata Tengah */
     background-color: var(--bg-sidebar);
     border-bottom: 1px solid var(--border-color);
     position: relative;
@@ -113,7 +113,6 @@
   }
   .btn-login:hover { transform: translateY(-2px); }
 
-  /* MODIFIED: Added flex-wrap for more icons */
   .social-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
   .social-icon { width: 20px; height: 20px; fill: var(--text-muted); cursor: pointer; transition: fill 0.2s; }
   .social-icon:hover { fill: var(--primary); }
@@ -147,19 +146,29 @@
   .chat-interface { display: flex; flex-direction: column; height: 100%; width: 100%; display: none; }
   .chat-interface.active { display: flex; }
 
-  /* MODIFIED: Added Z-Index for safety */
   .chat-header {
     height: 70px;
-    padding: 0 20px;
+    padding: 0 10px; /* Padding sedikit dikurangi untuk HP */
     background: var(--bg-sidebar);
     border-bottom: 1px solid var(--border-color);
     display: flex; align-items: center; gap: 15px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     z-index: 50; 
+    position: relative;
   }
 
-  /* MODIFIED: Ensure clickable area */
-  .btn-back { display: none; background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; padding: 5px 10px 5px 0; z-index: 60; }
+  /* PERBAIKAN TOMBOL BACK */
+  .btn-back { 
+    display: none; 
+    background: none; 
+    border: none; 
+    color: var(--text-main); 
+    font-size: 28px; /* Diperbesar */
+    cursor: pointer; 
+    padding: 10px 15px; /* Area sentuh diperluas */
+    z-index: 999; /* Z-Index tinggi agar tidak tertutup */
+    line-height: 1;
+  }
 
   .chat-title-group { display: flex; flex-direction: column; }
   .chat-name { font-weight: 600; font-size: 16px; }
@@ -222,9 +231,9 @@
     .app-layout.chat-active .sidebar { transform: translateX(-20%); opacity: 0; }
     .app-layout.chat-active .main-area { transform: translateX(0); }
 
-    .welcome-screen { display: none; } /* No welcome screen on mobile */
-    .chat-interface { display: flex; } /* Always ready */
-    .btn-back { display: block; }
+    .welcome-screen { display: none; } 
+    .chat-interface { display: flex; } 
+    .btn-back { display: block; } /* Tombol Back Muncul di Mobile */
     
     .messages-container { padding: 15px; }
     .bubble { max-width: 85%; }
@@ -281,7 +290,7 @@
 
     <div class="chat-interface" id="chatInterface">
       <div class="chat-header">
-        <button class="btn-back" onclick="window.toggleMobile(false)">❮</button>
+        <button class="btn-back" id="mobileBackBtn">❮</button>
         <div class="avatar" id="headerAvatar" style="width: 40px; height: 40px; font-size: 14px;"></div>
         <div class="chat-title-group">
           <span class="chat-name" id="headerName">Select Chat</span>
@@ -363,6 +372,7 @@
   const headerAvatar = document.getElementById('headerAvatar');
   const welcomeScreen = document.getElementById('welcomeScreen');
   const chatInterface = document.getElementById('chatInterface');
+  const mobileBackBtn = document.getElementById('mobileBackBtn');
 
   // Generate Sidebar Items
   data.forEach((item, index) => {
@@ -380,13 +390,21 @@
     contactList.appendChild(el);
   });
 
-  // MODIFIED: Ensure global scope for button click
-  window.toggleMobile = function(isOpen) {
+  // Fungsi Toggle Mobile
+  function toggleMobile(isOpen) {
     if(isOpen) {
       appLayout.classList.add('chat-active');
     } else {
       appLayout.classList.remove('chat-active');
     }
+  }
+
+  // FIX: Menggunakan Event Listener untuk Tombol Back
+  if(mobileBackBtn){
+    mobileBackBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleMobile(false);
+    });
   }
 
   function openChat(index) {
@@ -406,7 +424,7 @@
     
     // Mobile Transition
     if(window.innerWidth <= 768) {
-      window.toggleMobile(true);
+      toggleMobile(true);
     }
 
     // Load Messages
