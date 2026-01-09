@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Furqon Portfolio</title>
+<style>
+  /* --- 1. RESET & VARIABLES (Skema Warna Baru) --- */
+  :root {
+    /* Warna latar belakang utama yang lebih gelap */
+    --bg-main: #121a2b; 
+    /* Warna panel sidebar/card */
+    --bg-panel: #1a2332; 
+    /* Warna area chat */
+    --bg-chat-area: #0f1520;
+    --border-color: #2a3444;
+    --primary-blue: #3b82f6;
+    --text-light: #f8fafc;
+    --text-dim: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  /* FIX UTAMA: Memaksa body memenuhi viewport iframe */
+  html, body {
+    height: 100%; width: 100%;
+    overflow: hidden; /* Mencegah scrollbar ganda */
+    background-color: var(--bg-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    position: fixed; /* Kunci posisi untuk full page */
+    top: 0; left: 0; right: 0; bottom: 0;
+  }
+
+  /* --- 2. LAYOUT CONTAINER --- */
+  .app-container {
+    display: flex;
+    width: 100%; height: 100%;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-main);
+  }
+
+  /* --- 3. SIDEBAR (Left Panel) --- */
+  .sidebar {
+    width: 360px; /* Lebar tetap di desktop */
+    height: 100%;
+    background-color: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column;
+    z-index: 20;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Header Baru Dua Tingkat */
+  .sidebar-header-top {
+    padding: 15px 20px;
+    background-color: #151d2c; /* Sedikit lebih gelap */
+    text-align: center;
+    font-weight: 800; letter-spacing: 1px;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sidebar-header-sub {
+    padding: 15px 20px;
+    display: flex; align-items: center;
+    font-weight: 700; font-size: 18px;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .status-dot { height: 10px; width: 10px; background-color: #10b981; border-radius: 50%; margin-left: 10px; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+  /* Contact List */
+  .contact-list {
+    flex: 1; /* Mengisi ruang tengah */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  .contact-item {
+    display: flex; align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s;
+  }
+  .contact-item:hover { background-color: rgba(255,255,255,0.02); }
+  .contact-item.active { background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary-blue); }
+
+  /* GANTI LINGKARAN DENGAN FOTO */
+  .avatar-img {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    object-fit: cover; /* Agar foto tidak gepeng */
+    margin-right: 15px;
+    border: 2px solid var(--border-color);
+  }
+
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: 16px; font-weight: 600; color: var(--text-light); margin-bottom: 4px; }
+  .desc { font-size: 13px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Sidebar Footer (Padat di bawah) */
+  .sidebar-footer {
+    padding: 20px;
+    background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+  }
+
+  .btn-login {
+    display: block; width: 100%;
+    padding: 12px;
+    background: var(--primary-blue);
+    color: white; text-decoration: none; font-weight: 700; border-radius: 8px;
+    margin-bottom: 15px; font-size: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    transition: background 0.2s;
+  }
+  .btn-login:hover { background-color: #2563eb; }
+
+  .social-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 10px; }
+  .social-icon svg { width: 20px; height: 20px; fill: var(--text-dim); transition: fill 0.2s; }
+  .social-icon:hover svg { fill: var(--primary-blue); }
+  .credit { font-size: 11px; color: #64748b; }
+
+  /* --- 4. CHAT AREA (Right Panel) --- */
+  .chat-area {
+    flex: 1; height: 100%;
+    background-color: var(--bg-chat-area);
+    /* Pattern background halus */
+    background-image: radial-gradient(circle at center, rgba(59,130,246,0.05) 0, transparent 70%), url("https://www.transparenttextures.com/patterns/cubes.png");
+    display: flex; flex-direction: column;
+    position: relative; z-index: 10;
+  }
+
+  /* Welcome Screen (Desktop Only) */
+  .welcome-state {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-dim); text-align: center;
+    z-index: 30; background-color: var(--bg-chat-area);
+  }
+  .welcome-state.hidden { display: none; }
+
+  /* Chat Interface (Hidden by default on Desktop) */
+  .chat-interface {
+    display: none; flex-direction: column; height: 100%; width: 100%;
+  }
+  .chat-interface.active { display: flex; }
+
+  .chat-header {
+    height: 65px; padding: 0 20px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center;
+    flex-shrink: 0;
+  }
+  .btn-back { display: none; background: none; border: none; color: var(--text-light); font-size: 24px; margin-right: 15px; cursor: pointer; }
+  .chat-user-name { font-weight: 600; color: var(--text-light); font-size: 16px; }
+
+  .messages-box {
+    flex: 1; padding: 20px;
+    overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bubble {
+    max-width: 80%; padding: 12px 16px;
+    background-color: #1f2937; /* Warna bubble sedikit berbeda */
+    color: var(--text-light);
+    border-radius: 12px; border-top-left-radius: 0;
+    font-size: 15px; line-height: 1.5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease;
+    align-self: flex-start;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .bubble b { color: var(--primary-blue); }
+  .time { font-size: 10px; color: var(--text-dim); display: block; text-align: right; margin-top: 5px; }
+
+  .input-area {
+    height: 70px; padding: 0 20px;
+    background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    display: flex; align-items: center; flex-shrink: 0;
+  }
+  .fake-input {
+    flex: 1; height: 45px; background: var(--bg-main);
+    border-radius: 25px; padding: 0 20px;
+    display: flex; align-items: center; color: var(--text-dim);
+    font-size: 14px; border: 1px solid var(--border-color);
+  }
+
+  /* --- 5. MOBILE RESPONSIVE (Full Portrait Logic) --- */
+  @media (max-width: 768px) {
+    /* Sidebar memenuhi layar di mobile */
+    .sidebar { width: 100%; position: absolute; top: 0; left: 0; bottom: 0; }
+    
+    /* Chat area tersembunyi di kanan */
+    .chat-area {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      transform: translateX(100%); 
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 50; 
+    }
+
+    /* Saat chat aktif, geser masuk */
+    .app-container.mobile-chat-open .chat-area { transform: translateX(0); }
+
+    /* Penyesuaian elemen mobile */
+    .welcome-state { display: none; } 
+    .chat-interface { display: flex; } 
+    .btn-back { display: block; } 
+    .bubble { max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container" id="appContainer">
+  
+  <div class="sidebar">
+    <div class="sidebar-header-top">GOGIEK.COM</div>
+    <div class="sidebar-header-sub">
+      MY PORTFOLIO <span class="status-dot"></span>
+    </div>
+    
+    <div class="contact-list" id="contactList"></div>
+
+    <div class="sidebar-footer">
+      <a href="https://gogiek.com/login" target="_blank" class="btn-login">LOGIN AREA</a>
+      <div class="social-row">
+         <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg></a>
+         <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/></svg></a>
+         <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/></svg></a>
+      </div>
+      <div class="credit">Design by Gogiek 2026</div>
+    </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="welcome-state" id="welcomeState">
+      <div style="font-size: 60px; margin-bottom: 20px;">👋</div>
+      <h3>Selamat Datang, Recruiter!</h3>
+      <p style="margin-top:10px; font-size:14px; max-width: 300px;">
+        Silakan pilih menu di sebelah kiri untuk melihat detail pengalaman 20 tahun saya di dunia IT.
+      </p>
+    </div>
+
+    <div class="chat-interface" id="chatInterface">
+      <div class="chat-header">
+        <button class="btn-back" onclick="closeChat()">❮</button>
+        <div style="display:flex; flex-direction:column;">
+          <span class="chat-user-name" id="chatName">Select Chat</span>
+          <span style="font-size:12px; color:var(--primary-blue);">online</span>
+        </div>
+      </div>
+      
+      <div class="messages-box" id="messagesBox"></div>
+      
+      <div class="input-area">
+        <div class="fake-input">Type a message...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // --- DATA ---
+  // PENTING: Ganti URL di properti 'photoUrl' dengan link foto Anda yang asli.
+  // Gunakan gambar persegi (rasio 1:1) agar hasilnya bulat sempurna.
+  const data = [
+    {
+      id: 1, name: 'About Me', 
+      desc: 'Web & Network Specialist', 
+      // GANTI URL FOTO INI:
+      photoUrl: 'https://ui-avatars.com/api/?name=About+Me&background=ec4899&color=fff&size=128',
+      chats: [
+        "Hi! Saya adalah **Web & Network Specialist**.",
+        "Pengalaman: **20 Tahun** di industri IT (ISP & Web Dev).",
+        "Fokus utama saya adalah membangun infrastruktur jaringan yang stabil dan sistem web yang handal."
+      ]
+    },
+    {
+      id: 2, name: 'Experience', 
+      desc: 'ISP, Network Admin, IT Support', 
+      // GANTI URL FOTO INI:
+      photoUrl: 'https://ui-avatars.com/api/?name=Experience&background=f59e0b&color=fff&size=128',
+      chats: [
+        "**2005 - 2010: Network Administrator & Developer**\nDi sebuah Internet Service Provider (ISP).",
+        "**Job Desk:**\nMembuat dan merawat jaringan untuk 5000+ pelanggan menggunakan Mikrotik, Cisco, dan OpenBSD.",
+        "**Server Management:**\nDevelop sendiri Proxy server (Squid), DNS, Mail, Hosting, dan RAS server.",
+        "**Infrastructure:**\nDesain NOC dan membangun tower jaringan Wireless menggunakan Ubiquiti dan D-Link.",
+        "**2009 - Sekarang: IT Freelance**\nBerbagai proyek IT dan Networking.",
+        "**2009 - Sekarang: IT Support**\nDi sebuah perusahaan Snack ternama."
+      ]
+    },
+    {
+      id: 3, name: 'Featured Projects', 
+      desc: 'Indobilling, GeekCloud, IoT', 
+      // GANTI URL FOTO INI:
+      photoUrl: 'https://ui-avatars.com/api/?name=Projects&background=3b82f6&color=fff&size=128',
+      chats: [
+        "1. **Indobilling (2008)**\nSistem billing warnet, peran sebagai Security Tester dan Debugger.",
+        "2. **GeekCloud (2015)**\nCloud Management dan sistem billing untuk layanan Cloud.",
+        "3. **Geek IoT (2017)**\nProyek robotika berbasis Arduino dan ESP."
+      ]
+    },
+    {
+      id: 4, name: 'My Hobby', 
+      desc: 'Basketball, Reading', 
+      // GANTI URL FOTO INI:
+      photoUrl: 'https://ui-avatars.com/api/?name=Hobby&background=10b981&color=fff&size=128',
+      chats: [
+        "Hidup Di Luar Layar 🎉",
+        "Kalo Lagi Nggak Ngoding:\n🏀 Nonton atau ngelatih basket (3x seminggu)\n🗻 Rencanain acara jalan-jalan ama keluarga ato teman\n📚 Baca buku atau browsing\n☕ Ngopi sini-sana sambil ngrumpi :D"
+      ]
+    }
+  ];
+
+  // --- ELEMENTS ---
+  const appContainer = document.getElementById('appContainer');
+  const contactList = document.getElementById('contactList');
+  const welcomeState = document.getElementById('welcomeState');
+  const chatInterface = document.getElementById('chatInterface');
+  const messagesBox = document.getElementById('messagesBox');
+  const chatName = document.getElementById('chatName');
+
+  // --- RENDER SIDEBAR (Dengan Tag IMG) ---
+  data.forEach((item, index) => {
+    const el = document.createElement('div');
+    el.className = 'contact-item';
+    // Menggunakan tag <img> untuk foto
+    el.innerHTML = `
+      <img src="${item.photoUrl}" alt="${item.name}" class="avatar-img">
+      <div class="info">
+        <div class="name">${item.name}</div>
+        <div class="desc">${item.desc}</div>
+      </div>
+    `;
+    el.onclick = () => openChat(index);
+    contactList.appendChild(el);
+  });
+
+  // --- FUNCTIONS ---
+  function openChat(index) {
+    document.querySelectorAll('.contact-item').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.contact-item')[index].classList.add('active');
+
+    welcomeState.classList.add('hidden');
+    chatInterface.classList.add('active');
+    
+    // Trigger Mobile Slide Animation
+    if (window.innerWidth <= 768) {
+      appContainer.classList.add('mobile-chat-open');
+    }
+
+    const selected = data[index];
+    chatName.innerText = selected.name;
+
+    messagesBox.innerHTML = '';
+    let i = 0;
+    
+    function typeNext() {
+      if (i < selected.chats.length) {
+        const div = document.createElement('div');
+        div.className = 'bubble';
+        div.innerHTML = selected.chats[i]
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\n/g, '<br>');
+        
+        div.innerHTML += `<span class="time">Just now</span>`;
+        
+        messagesBox.appendChild(div);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+        i++;
+        setTimeout(typeNext, 600); 
+      }
+    }
+    typeNext();
+  }
+
+  function closeChat() {
+    // Tombol Back khusus Mobile
+    appContainer.classList.remove('mobile-chat-open');
+  }
+
+</script>
+
+</body>
+</html>
