@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Furqon Portfolio</title>
+<style>
+  /* --- 1. VARIABLES & RESET --- */
+  :root {
+    --bg-app: #0f172a;       /* Slate 900 */
+    --bg-sidebar: #1e293b;   /* Slate 800 */
+    --bg-chat: #0b1120;      /* Darker Slate */
+    --border-color: #334155; /* Slate 700 */
+    --primary: #3b82f6;      /* Blue 500 */
+    --primary-dark: #2563eb; /* Blue 600 */
+    --text-main: #f1f5f9;    /* Slate 100 */
+    --text-muted: #94a3b8;   /* Slate 400 */
+    --bubble-received: #1e293b;
+    --bubble-sent: #2563eb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+  
+  body { 
+    background-color: var(--bg-app); 
+    color: var(--text-main); 
+    overflow: hidden; 
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  }
+
+  /* --- 2. LAYOUT GRID --- */
+  .app-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-app);
+  }
+
+  /* --- 3. SIDEBAR STYLING --- */
+  .sidebar {
+    width: 380px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Header Sidebar */
+  .sidebar-header {
+    height: 70px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .brand-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-main); }
+  .status-badge { font-size: 11px; background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 10px; }
+
+  /* Search Dummy */
+  .search-box { padding: 10px 15px; border-bottom: 1px solid var(--border-color); }
+  .search-input { width: 100%; background: var(--bg-app); border: none; padding: 8px 15px; border-radius: 8px; color: var(--text-muted); font-size: 14px; outline: none; }
+
+  /* Contact List */
+  .contact-list { flex: 1; overflow-y: auto; padding: 0; }
+  
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.2s;
+  }
+  .contact-item:hover { background-color: rgba(255,255,255,0.05); }
+  .contact-item.active { background-color: rgba(59, 130, 246, 0.15); border-left: 3px solid var(--primary); }
+
+  /* Avatar Generator Style */
+  .avatar {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 16px; color: white;
+    flex-shrink: 0;
+  }
+
+  .info-col { margin-left: 15px; flex: 1; min-width: 0; }
+  .info-name { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 3px; }
+  .info-desc { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .info-time { font-size: 11px; color: var(--text-muted); }
+
+  /* Sidebar Footer */
+  .sidebar-footer {
+    padding: 20px;
+    background: var(--bg-app);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+  }
+
+  .btn-login {
+    display: block; width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white; text-decoration: none; font-weight: 600; font-size: 14px;
+    border-radius: 8px; margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    transition: transform 0.2s;
+  }
+  .btn-login:hover { transform: translateY(-2px); }
+
+  .social-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; }
+  .social-icon { width: 20px; height: 20px; fill: var(--text-muted); cursor: pointer; transition: fill 0.2s; }
+  .social-icon:hover { fill: var(--primary); }
+  .footer-copy { font-size: 11px; color: #475569; }
+
+  /* --- 4. MAIN CHAT AREA --- */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-chat);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(59,130,246,0.1) 0px, transparent 50%),
+      url("https://www.transparenttextures.com/patterns/cubes.png");
+    position: relative;
+    width: 100%;
+  }
+
+  /* Default Welcome Screen (Desktop) */
+  .welcome-screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; color: var(--text-muted);
+    z-index: 10; background: var(--bg-chat);
+  }
+  .welcome-screen.hide { display: none; }
+  .welcome-img { width: 150px; opacity: 0.5; margin-bottom: 20px; filter: grayscale(100%); }
+
+  /* Chat Interface */
+  .chat-interface { display: flex; flex-direction: column; height: 100%; width: 100%; display: none; }
+  .chat-interface.active { display: flex; }
+
+  .chat-header {
+    height: 70px;
+    padding: 0 20px;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; gap: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .btn-back { display: none; background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; }
+
+  .chat-title-group { display: flex; flex-direction: column; }
+  .chat-name { font-weight: 600; font-size: 16px; }
+  .chat-status { font-size: 12px; color: var(--primary); }
+
+  /* Messages Area */
+  .messages-container {
+    flex: 1;
+    padding: 20px 50px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .bubble {
+    max-width: 70%;
+    padding: 12px 18px;
+    font-size: 15px; line-height: 1.5;
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+  .bubble.received {
+    align-self: flex-start;
+    background: var(--bubble-received);
+    border-top-left-radius: 0;
+  }
+  .bubble.received::before {
+    content: ""; position: absolute; top: 0; left: -8px;
+    width: 0; height: 0;
+    border-top: 10px solid var(--bubble-received);
+    border-left: 10px solid transparent;
+  }
+
+  .time-stamp { display: block; font-size: 10px; opacity: 0.6; margin-top: 5px; text-align: right; }
+  
+  /* Bold Text Handling */
+  .bubble b { color: var(--primary); font-weight: 600; }
+
+  /* Input Footer */
+  .chat-footer {
+    height: 70px; padding: 0 20px;
+    background: var(--bg-sidebar); border-top: 1px solid var(--border-color);
+    display: flex; align-items: center; gap: 15px;
+  }
+  .input-bar {
+    flex: 1; height: 45px; background: var(--bg-app);
+    border-radius: 25px; padding: 0 20px;
+    display: flex; align-items: center; color: var(--text-muted); font-size: 14px;
+    border: 1px solid var(--border-color);
+  }
+
+  /* --- 5. RESPONSIVE MOBILE --- */
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; position: absolute; height: 100%; transform: translateX(0); }
+    .main-area { width: 100%; position: absolute; height: 100%; transform: translateX(100%); transition: transform 0.3s ease; }
+    
+    .app-layout.chat-active .sidebar { transform: translateX(-20%); opacity: 0; }
+    .app-layout.chat-active .main-area { transform: translateX(0); }
+
+    .welcome-screen { display: none; } /* No welcome screen on mobile */
+    .chat-interface { display: flex; } /* Always ready */
+    .btn-back { display: block; }
+    
+    .messages-container { padding: 15px; }
+    .bubble { max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout" id="appLayout">
+  
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <span class="brand-title">MY PORTFOLIO</span>
+        <span class="status-badge">ONLINE</span>
+      </div>
+    </div>
+    
+    <div class="search-box">
+      <input type="text" class="search-input" placeholder="Cari pengalaman atau skill..." readonly>
+    </div>
+
+    <div class="contact-list" id="contactList">
+      </div>
+
+    <div class="sidebar-footer">
+      <a href="https://gogiek.com/login" target="_blank" class="btn-login">LOGIN AREA</a>
+      <div class="social-row">
+         <a title="WhatsApp" class="social-icon" href="https://wa.me/62812345678"><svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg></a>
+         <a title="LinkedIn" class="social-icon" href="https://linkedin.com"><svg viewBox="0 0 24 24"><path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/></svg></a>
+         <a title="Email" class="social-icon" href="mailto:email@x.com"><svg viewBox="0 0 24 24"><path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/></svg></a>
+      </div>
+      <div class="footer-copy">Design by Gogiek 2026</div>
+    </div>
+  </aside>
+
+  <main class="main-area">
+    
+    <div class="welcome-screen" id="welcomeScreen">
+      <div style="font-size: 60px; margin-bottom: 20px;">💻</div>
+      <h2>Selamat Datang, Recruiter!</h2>
+      <p style="margin-top:10px; font-size:14px; max-width: 300px;">
+        Silakan pilih menu di sebelah kiri untuk melihat detail pengalaman 20 tahun saya di dunia IT.
+      </p>
+    </div>
+
+    <div class="chat-interface" id="chatInterface">
+      <div class="chat-header">
+        <button class="btn-back" onclick="toggleMobile(false)">❮</button>
+        <div class="avatar" id="headerAvatar" style="width: 40px; height: 40px; font-size: 14px;"></div>
+        <div class="chat-title-group">
+          <span class="chat-name" id="headerName">Select Chat</span>
+          <span class="chat-status">typing...</span>
+        </div>
+      </div>
+
+      <div class="messages-container" id="chatBody">
+        </div>
+
+      <div class="chat-footer">
+        <div class="input-bar">Type a message...</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // --- DATA SETUP ---
+  const data = [
+    {
+      id: 'about',
+      initial: 'AM',
+      color: '#ec4899', // Pink
+      name: 'About Me',
+      desc: 'Web & Network Specialist',
+      messages: [
+        "Hi! Saya adalah **Web & Network Specialist**.",
+        "Pengalaman: **20 Tahun** di industri IT (ISP & Web Dev).",
+        "Fokus utama saya adalah membangun infrastruktur jaringan yang stabil dan sistem web yang handal."
+      ]
+    },
+    {
+      id: 'work',
+      initial: 'WE',
+      color: '#f59e0b', // Amber
+      name: 'Work Experience',
+      desc: 'ISP, Network Admin, IT Support',
+      messages: [
+        "**2005 - 2010: Network Administrator & Developer**\nDi sebuah Internet Service Provider (ISP).",
+        "**Job Desk:**\nMembuat dan merawat jaringan untuk 5000+ pelanggan menggunakan Mikrotik, Cisco, dan OpenBSD.",
+        "**Server Management:**\nDevelop sendiri Proxy server (Squid), DNS, Mail, Hosting, dan RAS server.",
+        "**Infrastructure:**\nDesain NOC dan membangun tower jaringan Wireless menggunakan Ubiquiti dan D-Link.",
+        "**2009 - Sekarang: IT Freelance**\nBerbagai proyek IT dan Networking.",
+        "**2009 - Sekarang: IT Support**\nDi sebuah perusahaan Snack ternama."
+      ]
+    },
+    {
+      id: 'proj',
+      initial: 'PJ',
+      color: '#3b82f6', // Blue
+      name: 'Featured Projects',
+      desc: 'Indobilling, GeekCloud, IoT',
+      messages: [
+        "1. **Indobilling (2008)**\nSistem billing warnet, peran sebagai Security Tester dan Debugger.",
+        "2. **GeekCloud (2015)**\nCloud Management dan sistem billing untuk layanan Cloud.",
+        "3. **Geek IoT (2017)**\nProyek robotika berbasis Arduino dan ESP."
+      ]
+    },
+    {
+      id: 'hobby',
+      initial: 'HB',
+      color: '#10b981', // Emerald
+      name: 'My Hobby',
+      desc: 'Basketball, Reading, Coffee',
+      messages: [
+        "Hidup Di Luar Layar 🎉",
+        "Kalo Lagi Nggak Ngoding:\n🏀 Nonton atau ngelatih basket (3x seminggu)\n🗻 Rencanain acara jalan-jalan ama keluarga ato teman\n📚 Baca buku atau browsing\n☕ Ngopi sini-sana sambil ngrumpi :D"
+      ]
+    }
+  ];
+
+  // --- LOGIC ---
+  const appLayout = document.getElementById('appLayout');
+  const contactList = document.getElementById('contactList');
+  const chatBody = document.getElementById('chatBody');
+  const headerName = document.getElementById('headerName');
+  const headerAvatar = document.getElementById('headerAvatar');
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const chatInterface = document.getElementById('chatInterface');
+
+  // Generate Sidebar Items
+  data.forEach((item, index) => {
+    const el = document.createElement('div');
+    el.className = 'contact-item';
+    el.innerHTML = `
+      <div class="avatar" style="background:${item.color}">${item.initial}</div>
+      <div class="info-col">
+        <div class="info-name">${item.name}</div>
+        <div class="info-desc">${item.desc}</div>
+      </div>
+      <div class="info-time">Now</div>
+    `;
+    el.onclick = () => openChat(index);
+    contactList.appendChild(el);
+  });
+
+  function toggleMobile(isOpen) {
+    if(isOpen) {
+      appLayout.classList.add('chat-active');
+    } else {
+      appLayout.classList.remove('chat-active');
+    }
+  }
+
+  function openChat(index) {
+    // UI Updates
+    document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.contact-item')[index].classList.add('active');
+    
+    // Hide Welcome, Show Chat
+    welcomeScreen.classList.add('hide');
+    chatInterface.classList.add('active');
+    
+    // Set Header Info
+    const item = data[index];
+    headerName.innerText = item.name;
+    headerAvatar.innerText = item.initial;
+    headerAvatar.style.background = item.color;
+    
+    // Mobile Transition
+    if(window.innerWidth <= 768) {
+      toggleMobile(true);
+    }
+
+    // Load Messages
+    chatBody.innerHTML = '';
+    let i = 0;
+    
+    function typeWriter() {
+      if (i < item.messages.length) {
+        const msg = document.createElement('div');
+        msg.className = 'bubble received';
+        // Format Bold & Newline
+        let txt = item.messages[i]
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\n/g, '<br>');
+        
+        msg.innerHTML = `${txt}<span class="time-stamp">Just now</span>`;
+        chatBody.appendChild(msg);
+        chatBody.scrollTop = chatBody.scrollHeight; // Auto Scroll
+        i++;
+        setTimeout(typeWriter, 700); // Typing delay
+      }
+    }
+    typeWriter();
+  }
+</script>
+
+</body>
+</html>
