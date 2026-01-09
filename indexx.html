@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Furqon Portfolio</title>
+<style>
+  /* --- 1. CONFIGURATION (Warna Sesuai Gambar) --- */
+  :root {
+    --bg-main: #121a2b;       /* Dark Blue Background */
+    --bg-panel: #1a2332;      /* Sidebar Background */
+    --bg-chat: #0f1520;       /* Chat Area Background */
+    --border-color: #2a3444;
+    --primary: #3b82f6;       /* Blue Accent */
+    --text-white: #f8fafc;
+    --text-grey: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  /* FIX FULL PAGE: Kunci body agar tidak scroll ganda */
+  html, body {
+    height: 100%; width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  }
+
+  /* --- 2. LAYOUT --- */
+  .app-container {
+    display: flex; width: 100%; height: 100%;
+    position: relative; overflow: hidden;
+    background-color: var(--bg-main);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 360px;
+    height: 100%;
+    background-color: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column;
+    z-index: 20;
+    /* PERBAIKAN JARAK LOGIN: Footer menempel di bawah konten, bukan di dasar layar */
+    justify-content: flex-start; 
+  }
+
+  /* Header Sidebar 2 Baris */
+  .brand-header {
+    padding: 12px 20px;
+    background-color: #151d2c;
+    text-align: center; font-weight: 800; letter-spacing: 1px; color: var(--text-white);
+    border-bottom: 1px solid var(--border-color); font-size: 14px;
+  }
+
+  .title-header {
+    padding: 15px 20px;
+    display: flex; align-items: center; font-weight: 700; font-size: 18px; color: var(--text-white);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .status-dot { height: 10px; width: 10px; background-color: #10b981; border-radius: 50%; margin-left: 10px; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+  /* CONTACT LIST */
+  .contact-list {
+    overflow-y: auto;
+    /* PERBAIKAN: flex-grow 0 agar list tidak mendorong footer ke bawah */
+    flex-grow: 0; 
+    flex-shrink: 1;
+  }
+
+  .contact-item {
+    display: flex; align-items: center; padding: 15px 20px; cursor: pointer;
+    border-bottom: 1px solid var(--border-color); transition: all 0.2s;
+  }
+  .contact-item:hover { background-color: rgba(255,255,255,0.02); }
+  .contact-item.active { background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); }
+
+  /* FOTO AVATAR */
+  .avatar-img {
+    width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+    margin-right: 15px; border: 2px solid var(--border-color); background-color: #333;
+  }
+
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: 16px; font-weight: 600; color: var(--text-white); margin-bottom: 4px; }
+  .desc { font-size: 13px; color: var(--text-grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* FOOTER (LOGIN AREA) */
+  .sidebar-footer {
+    padding: 25px 20px;
+    background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    /* Pastikan footer tidak terlalu jauh */
+    margin-top: 0; 
+  }
+
+  .btn-login {
+    display: block; width: 100%; padding: 12px; background: var(--primary);
+    color: white; text-decoration: none; font-weight: 700; border-radius: 8px;
+    margin-bottom: 20px; font-size: 14px; letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); transition: background 0.2s;
+  }
+  .btn-login:hover { background-color: #2563eb; }
+
+  .social-row { display: flex; justify-content: center; gap: 25px; margin-bottom: 10px; }
+  .social-icon svg { width: 22px; height: 22px; fill: var(--text-grey); transition: fill 0.2s; }
+  .social-icon:hover svg { fill: var(--primary); }
+  .credit { font-size: 11px; color: #475569; margin-top: 10px;}
+
+  /* Spacer Opsional: Mengisi sisa ruang jika layar sangat tinggi */
+  .spacer { flex: 1; background-color: var(--bg-panel); }
+
+  /* CHAT AREA */
+  .chat-area {
+    flex: 1; height: 100%; background-color: var(--bg-chat);
+    background-image: radial-gradient(circle at center, rgba(59,130,246,0.05) 0, transparent 70%), url("https://www.transparenttextures.com/patterns/cubes.png");
+    display: flex; flex-direction: column; position: relative; z-index: 10;
+  }
+
+  .welcome-screen {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: var(--text-grey);
+    text-align: center; z-index: 30; background-color: var(--bg-chat);
+  }
+  .welcome-screen.hidden { display: none; }
+
+  .chat-interface { display: none; flex-direction: column; height: 100%; width: 100%; }
+  .chat-interface.active { display: flex; }
+
+  .chat-header {
+    height: 65px; padding: 0 20px; background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color); display: flex; align-items: center; flex-shrink: 0;
+  }
+  .btn-back { display: none; background: none; border: none; color: var(--text-white); font-size: 24px; margin-right: 15px; cursor: pointer; }
+  
+  .messages-box {
+    flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bubble {
+    max-width: 80%; padding: 12px 16px; background-color: #1f2937; color: var(--text-white);
+    border-radius: 12px; border-top-left-radius: 0; font-size: 15px; line-height: 1.5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; align-self: flex-start;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .bubble b { color: var(--primary); }
+  .time { font-size: 10px; color: var(--text-grey); display: block; text-align: right; margin-top: 5px; }
+
+  .input-area {
+    height: 70px; padding: 0 20px; background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-color); display: flex; align-items: center; flex-shrink: 0;
+  }
+  .fake-input {
+    flex: 1; height: 45px; background: var(--bg-main); border-radius: 25px; padding: 0 20px;
+    display: flex; align-items
